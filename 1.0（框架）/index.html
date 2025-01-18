@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇游戏</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        // 获取画布元素和上下文
+        var canvas = document.getElementById("gameCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // 蛇的初始位置和大小
+        var snake = [{x: 200, y: 200}];
+        var snakeSize = 10;
+        // 蛇的移动方向
+        var dx = 10;
+        var dy = 0;
+
+        // 食物的初始位置
+        var food = {x: 300, y: 300};
+
+        // 游戏循环函数
+        function gameLoop() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 移动蛇的头部
+            var head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+
+            // 检查是否吃到食物
+            if (head.x === food.x && head.y === food.y) {
+                // 重新生成食物
+                food = {x: Math.floor(Math.random() * (canvas.width / snakeSize)) * snakeSize, y: Math.floor(Math.random() * (canvas.height / snakeSize)) * snakeSize};
+            } else {
+                // 移除蛇的尾部
+                snake.pop();
+            }
+
+            // 绘制蛇
+            ctx.fillStyle = "green";
+            for (var i = 0; i < snake.length; i++) {
+                ctx.fillRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+            }
+
+            // 绘制食物
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
+
+            // 检查碰撞
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                alert("游戏结束");
+                return;
+            }
+
+            // 继续下一次循环
+            setTimeout(gameLoop, 100);
+        }
+
+        // 监听键盘事件，改变蛇的移动方向
+        document.addEventListener("keydown", function(event) {
+            switch(event.keyCode) {
+                case 37: // 左箭头
+                    if (dx!== 10) {
+                        dx = -10;
+                        dy = 0;
+                    }
+                    break;
+                case 38: // 上箭头
+                    if (dy!== 10) {
+                        dx = 0;
+                        dy = -10;
+                    }
+                    break;
+                case 39: // 右箭头
+                    if (dx!== -10) {
+                        dx = 10;
+                        dy = 0;
+                    }
+                    break;
+                case 40: // 下箭头
+                    if (dy!== -10) {
+                        dx = 0;
+                        dy = 10;
+                    }
+                    break;
+            }
+        });
+
+        // 开始游戏循环
+        gameLoop();
+    </script>
+</body>
+</html>

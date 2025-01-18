@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇游戏</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="scoreDisplay">得分: <span id="score">0</span></div>
+    <div id="highScoreDisplay">最高分: <span id="highScore">0</span></div>
+    <div>注：按空格即可暂停</div>
+    <button id="pauseButton">暂停/继续</button>
+    <audio id="eatSound" src="eat.mp3"></audio>
+    <audio id="gameOverSound" src="gameover.mp3"></audio>
+    <script>
+        var canvas = document.getElementById("gameCanvas");
+        var ctx = canvas.getContext("2d");
+        var snake = [{x: 200, y: 200}];
+        var snakeSize = 10;
+        var dx = 10;
+        var dy = 0;
+        var food = {x: 300, y: 300};
+        var score = 0;
+        var gameOver = false;
+        var scoreDisplay = document.getElementById("score");
+        var highScoreDisplay = document.getElementById("highScoreDisplay");
+        var highScore = 0;
+        var eatSound = document.getElementById("eatSound");
+        var gameOverSound = document.getElementById("gameOverSound");
+        var paused = false;
+        var intervalId;
+        var pauseButton = document.getElementById("pauseButton");
+
+        function gameLoop() {
+            if (gameOver || paused) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                food = {x: Math.floor(Math.random() * (canvas.width / snakeSize)) * snakeSize, y: Math.floor(Math.random() * (canvas.height / snakeSize)) * snakeSize};
+                score++;
+                scoreDisplay.textContent = score.toString();
+                eatSound.play();
+            } else {
+                snake.pop();
+            }
+            ctx.fillStyle = "green";
+            for (var i = 0; i < snake.length; i++) {
+                ctx.fillRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+            }
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                gameOverSound.play();
+                gameOver = true;
+                updateHighScore(); // 更新最高分
+                alert("游戏结束，按回车键重新开始");
+                return;
+            }
+            intervalId = setTimeout(gameLoop, 100);
+        }
+
+        document.addEventListener("keydown", function(event) {
+            if (gameOver && event.keyCode === 13) {
+                resetGame();
+                return;
+            }
+            switch(event.keyCode) {
+                case 37:
+                    if (dx!== 10) {
+                        dx = -10;
+                        dy = 0;
+                    }
+                    break;
+                case 38:
+                    if (dy!== 10) {
+                        dx = 0;
+                        dy = -10;
+                    }
+                    break;
+                case 39:
+                    if (dx!== -10) {
+                        dx = 10;
+                        dy = 0;
+                    }
+                    break;
+                case 40:
+                    if (dy!== -10) {
+                        dx = 0;
+                        dy = 10;
+                    }
+                    break;
+                case 32: // 空格的键码是 32
+                    pauseGame();
+                    break;
+            }
+        });
+
+        function resetGame() {
+            snake = [{x: 200, y: 200}];
+            dx = 10;
+            dy = 0;
+            food = {x: 300, y: 300};
+            score = 0;
+            scoreDisplay.textContent = score.toString();
+            gameOver = false;
+            gameOverSound.pause();
+            gameOverSound.currentTime = 0;
+            gameLoop();
+        }
+
+        function pauseGame() {
+            if (paused) {
+                paused = false;
+                pauseButton.textContent = "暂停";
+                gameLoop();
+            } else {
+                paused = true;
+                pauseButton.textContent = "继续";
+                clearTimeout(intervalId);
+            }
+        }
+
+        function updateHighScore() {
+            if (score > highScore) {
+                highScore = score;
+                highScoreDisplay.textContent = highScore.toString();
+            }
+        }
+
+        pauseButton.addEventListener("click", pauseGame);
+        gameLoop();
+    </script>
+</body>
+</html>
